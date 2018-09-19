@@ -1,0 +1,21 @@
+var searchData=
+[
+  ['id',['id',['../de/db0/structiftSuperpixelFeatureList.html#a7d0991545f6d99bc7d02d3fdbeca19a5',1,'iftSuperpixelFeatureList']]],
+  ['iftdist',['iftDist',['../d1/d86/iftDataSet_8h.html#a68af65eaf0672e02a285894335d7fbc5',1,'iftDataSet.h']]],
+  ['iftminkowski',['iftMinkowski',['../d1/d86/iftDataSet_8h.html#ae7715439e45e985d658a3e2d077d4c1c',1,'iftDataSet.h']]],
+  ['iftonerror',['iftOnError',['../dd/d1b/group__Dialog.html#gad72bd33ccd4ed18ffff22cb1b0fc51b9',1,'iftDialog.h']]],
+  ['images',['images',['../d2/d23/structiftImageArray.html#abda8c9cfbad10147ac0011d8802ad5aa',1,'iftImageArray']]],
+  ['img_5fmax_5frange',['img_max_range',['../dc/dab/structiftSlic.html#a8c65e77b751ac88742832a4a6c0663f9',1,'iftSlic']]],
+  ['imgsize',['imgSize',['../d6/de8/structiftBagOfFeatures.html#a7fd695c7a5410df2ee63ad7a530979fd',1,'iftBagOfFeatures']]],
+  ['iname',['iname',['../d0/de7/structnifti__image.html#aa99806d70cacff119b5b6089c3dfdeda',1,'nifti_image']]],
+  ['iname_5foffset',['iname_offset',['../d0/de7/structnifti__image.html#a856fc94a5daed16225264dc8daa96013',1,'nifti_image']]],
+  ['intent_5fcode',['intent_code',['../dd/d75/structnifti__1__header.html#a017e9d430b66386e569c6b9cd11059ed',1,'nifti_1_header::intent_code()'],['../d0/de7/structnifti__image.html#a56a5855aaf5323044ffdfde0a23214bc',1,'nifti_image::intent_code()']]],
+  ['intent_5fname',['intent_name',['../dd/d75/structnifti__1__header.html#a6932fdbc1090aa2682eff0131ad52401',1,'nifti_1_header::intent_name()'],['../d0/de7/structnifti__image.html#a0764cacf8341e21232d9423410c2b4c3',1,'nifti_image::intent_name()']]],
+  ['intent_5fp1',['intent_p1',['../dd/d75/structnifti__1__header.html#a5c875c40271c15601b3389450fba85b3',1,'nifti_1_header::intent_p1()'],['../d0/de7/structnifti__image.html#a1c3ebd9911ac46b659c268a95014b5e8',1,'nifti_image::intent_p1()']]],
+  ['intent_5fp2',['intent_p2',['../dd/d75/structnifti__1__header.html#ab39ee04eb345e95dd4e5183e0f84c02b',1,'nifti_1_header::intent_p2()'],['../d0/de7/structnifti__image.html#aacd903b0043fd9378de6927a64bafa85',1,'nifti_image::intent_p2()']]],
+  ['intent_5fp3',['intent_p3',['../dd/d75/structnifti__1__header.html#aa1eeee8a4cd325b413c5d368ec8fc534',1,'nifti_1_header::intent_p3()'],['../d0/de7/structnifti__image.html#a45dd58da99fbf651a96f68dc83e504c5',1,'nifti_image::intent_p3()']]],
+  ['is_5f3d_5fimg',['is_3D_img',['../dc/dab/structiftSlic.html#a868d135927d80310b8ce4b9eedb3cdcb',1,'iftSlic']]],
+  ['is_5fcolor_5fimg',['is_color_img',['../dc/dab/structiftSlic.html#a43fbb336c68ef1f2558708dec1f9f01c',1,'iftSlic']]],
+  ['iscolored',['isColored',['../d6/de8/structiftBagOfFeatures.html#a56f3bd1f9ce8b189884f9dedce3826e4',1,'iftBagOfFeatures']]],
+  ['iteration',['iteration',['../db/d5f/structift__neural__network.html#ace7eb05419f8fea9f2762046daf4c355',1,'ift_neural_network']]]
+];

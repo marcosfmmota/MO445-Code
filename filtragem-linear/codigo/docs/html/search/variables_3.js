@@ -1,0 +1,24 @@
+var searchData=
+[
+  ['data',['data',['../d1/d14/structiftCSV.html#a8f3554777974735eb317f031693b07d5',1,'iftCSV::data()'],['../d0/de7/structnifti__image.html#a9c7db78ad411a6e2b8a8ab071bbbe0a8',1,'nifti_image::data()'],['../d2/d18/classMSP_1_1Adjacency.html#a045c3bd5eb1133a507077c5cfda02a16',1,'MSP::Adjacency::data()']]],
+  ['data_5ftype',['data_type',['../dd/d75/structnifti__1__header.html#ae42d74b56440de615e0fac8ee0b97270',1,'nifti_1_header']]],
+  ['datatype',['datatype',['../dd/d75/structnifti__1__header.html#ad5f8888fcc5fde14d3e387653721e270',1,'nifti_1_header::datatype()'],['../d0/de7/structnifti__image.html#a51bad5202c3b9943b3c86f80ca5d1cd1',1,'nifti_image::datatype()']]],
+  ['db_5fname',['db_name',['../dd/d75/structnifti__1__header.html#a8e11f9c2255109c60b0ffc86f352ed42',1,'nifti_1_header']]],
+  ['descrip',['descrip',['../dd/d75/structnifti__1__header.html#a9cba1416b512dc30a93f8a2964626e5b',1,'nifti_1_header::descrip()'],['../d0/de7/structnifti__image.html#a3c79d06a583b3e3a902c5ec33eaab687',1,'nifti_image::descrip()']]],
+  ['description',['description',['../d8/da4/structiftCmdLineParser.html#a1c33ed4e5625710ca4638ac0992a43b4',1,'iftCmdLineParser']]],
+  ['dictionary',['dictionary',['../d6/de8/structiftBagOfFeatures.html#a40ae49534da7f8325cfdb188c1b1176f',1,'iftBagOfFeatures']]],
+  ['dictionaryestimator',['dictionaryEstimator',['../d6/de8/structiftBagOfFeatures.html#adfa603f93331557e51e28f3d66621fa6',1,'iftBagOfFeatures']]],
+  ['dictionarysize',['dictionarySize',['../d6/de8/structiftBagOfFeatures.html#aa3c62a532e00b2ab6dd09b671fc0b09c',1,'iftBagOfFeatures']]],
+  ['dilation_5fradius',['dilation_radius',['../db/d4f/structiftObjModel.html#abf01a9ff37a01ce976b6d74fcb85766c',1,'iftObjModel']]],
+  ['dim',['dim',['../dd/d75/structnifti__1__header.html#ace3aeebb3c10362c5c2e48cee87a7f2e',1,'nifti_1_header::dim()'],['../d0/de7/structnifti__image.html#a054f5f2c357dd6833efd467ac202f0a5',1,'nifti_image::dim()']]],
+  ['dim_5finfo',['dim_info',['../dd/d75/structnifti__1__header.html#a7d3eb58a5415d9c65f3df444ac94fc74',1,'nifti_1_header']]],
+  ['distalpha',['distAlpha',['../d6/db9/structiftSuperpixelIGraph.html#a0f22327b53f9826f2e0fc3c881164031',1,'iftSuperpixelIGraph::distAlpha()'],['../de/db0/structiftSuperpixelFeatureList.html#aa16a030b335a4503ebe30e96df96c836',1,'iftSuperpixelFeatureList::distAlpha()']]],
+  ['distfun',['distFun',['../d6/db9/structiftSuperpixelIGraph.html#a2c9fac8c18d3daf628dd330339d37d8f',1,'iftSuperpixelIGraph::distFun()'],['../de/db0/structiftSuperpixelFeatureList.html#a4ed4f9a4583f6f00e32e85c8d003ee1c',1,'iftSuperpixelFeatureList::distFun()']]],
+  ['dt',['dt',['../d0/de7/structnifti__image.html#ab4e9dd136d1de9fbe03c68f081876b9e',1,'nifti_image']]],
+  ['du',['du',['../d0/de7/structnifti__image.html#ab1c6399d45bf77d6eff712d318a9d0ca',1,'nifti_image']]],
+  ['dv',['dv',['../d0/de7/structnifti__image.html#a6155d97e665d879e662bf650c09d0bc1',1,'nifti_image']]],
+  ['dw',['dw',['../d0/de7/structnifti__image.html#ab7d8391bc07972e0b051f157dde00a04',1,'nifti_image']]],
+  ['dx',['dx',['../d5/dec/structiftImage.html#a7ccd561c30413693bf20ec74c665e496',1,'iftImage::dx()'],['../d0/de7/structnifti__image.html#a8d9ddfeecae70399a50dca551d69f774',1,'nifti_image::dx()']]],
+  ['dy',['dy',['../d5/dec/structiftImage.html#a6f3db73cafac21262fc68c18d365ad4b',1,'iftImage::dy()'],['../d0/de7/structnifti__image.html#afb6cd106a28d4599326042c43d85022b',1,'nifti_image::dy()']]],
+  ['dz',['dz',['../d5/dec/structiftImage.html#ac0f7d3027f71b2590831141a0a11f5ec',1,'iftImage::dz()'],['../d0/de7/structnifti__image.html#ac462fb16a688d8dbec164456febdc9c7',1,'nifti_image::dz()']]]
+];
