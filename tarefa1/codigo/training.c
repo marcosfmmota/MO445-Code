@@ -1,4 +1,4 @@
-#include "ift.h"
+#include "include/ift.h"
 #include "neural_net.c"
 
 iftImage *ReadMaskImage(char *pathname)
@@ -7,37 +7,37 @@ iftImage *ReadMaskImage(char *pathname)
   iftSList *list = iftSplitString(pathname,"_");
   iftSNode *L    = list->tail;
   char      filename[200];
-  sprintf(filename,"./imagens/placas/mask_%s",L->elem);
+  sprintf(filename,"../figs/imagens/placas/mask_%s",L->elem);
   mask = iftReadImageByExt(filename);
   iftDestroySList(&list);
   return(mask);
 }
 
-int main(int argc, char *argv[]) 
+int main(int argc, char *argv[])
 {
   iftImage  **mask;
   iftMImage **mimg, **cbands;
-  
+
   if (argc!=4)
     iftError("training <trainX.txt (X=1,2,3,4,5)> <kernel-bank.txt> <output-parameters.txt>","main");
 
   /* Read input images and kernel bank */
-  
+
   iftFileSet  *trainSet = iftLoadFileSetFromCSV(argv[1], false);
   mask = (iftImage **)  calloc(trainSet->n,sizeof(iftImage *));
-  mimg = (iftMImage **) calloc(trainSet->n,sizeof(iftMImage *));  
-  MKernelBank *Kbank    = ReadMKernelBank(argv[2]); 
+  mimg = (iftMImage **) calloc(trainSet->n,sizeof(iftMImage *));
+  MKernelBank *Kbank    = ReadMKernelBank(argv[2]);
 
   /* Apply the single-layer NN in all training images */
-  
+
   for (int i=0; i < trainSet->n; i++) {
     printf("Processing file %s\n",trainSet->files[i]->path);
-    iftImage  *img   = iftReadImageByExt(trainSet->files[i]->path); 
-    mask[i]          = ReadMaskImage(trainSet->files[i]->path);     
+    iftImage  *img   = iftReadImageByExt(trainSet->files[i]->path);
+    mask[i]          = ReadMaskImage(trainSet->files[i]->path);
     if ((img->xsize != 352) || (img->ysize != 240))
       printf("imagem %s ",trainSet->files[i]->path);
-    mimg[i]          = SingleLayer(img,Kbank); 
-    iftDestroyImage(&img); 
+    mimg[i]          = SingleLayer(img,Kbank);
+    iftDestroyImage(&img);
   }
 
   /* Compute plate parameters and normalize activation values within
@@ -50,13 +50,13 @@ int main(int argc, char *argv[])
   NormalizeActivationValues(mimg,trainSet->n,255,nparam);
 
   /* Find the best kernel weights */
-  
+
   FindBestKernelWeights(mimg,mask,trainSet->n,nparam);
 
   /* Combine bands, find optimum threshold, and apply it */
-  
+
   cbands = CombineBands(mimg, trainSet->n, nparam->weight);
-  RemoveActivationsOutOfRegionOfPlates(cbands, trainSet->n, nparam);  
+  RemoveActivationsOutOfRegionOfPlates(cbands, trainSet->n, nparam);
   FindBestThreshold(cbands, mask, trainSet->n,nparam);
 
   WriteNetParameters(nparam,argv[3]);
@@ -66,14 +66,14 @@ int main(int argc, char *argv[])
 
   PostProcess(bin,trainSet->n, nparam);
   WriteResults(trainSet,bin);
-	    
+
   /* Free memory */
-  
+
   for (int i=0; i < trainSet->n; i++) {
     iftDestroyImage(&mask[i]);
     iftDestroyImage(&bin[i]);
     iftDestroyMImage(&cbands[i]);
-    iftDestroyMImage(&mimg[i]);    
+    iftDestroyMImage(&mimg[i]);
   }
   iftFree(mask);
   iftFree(mimg);
@@ -82,6 +82,6 @@ int main(int argc, char *argv[])
   iftDestroyFileSet(&trainSet);
   DestroyMKernelBank(&Kbank);
   DestroyNetParameters(&nparam);
-  
+
   return(0);
 }
