@@ -355,9 +355,36 @@ void NormalizeActivationValues(iftMImage **mimg,int nimages, int maxval, NetPara
     }
 }
 
+float ComputeErrorBand(iftBand *band, iftImage *mask, float alpha, float beta)
+{
+  float eij = 0.0
+
+  return eij;
+}
+
+
+float ComputeAverageErrorImage(iftMImage *img, float alpha, float beta) {
+  float e = 0.0;
+
+  return e;
+}
+
+
 void FindBestKernelWeights(iftMImage **mimg, iftImage **mask, int nimages, NetParameters *nparam)
 {
-  // float *w  = nparam->weight;
+  float *w  = nparam->weight;
+  float *bandError = NULL;
+  float alpha = 1.0;
+  float beta = 10 * alpha;
+
+  for (int b=0; b< mimg[i]->m; i++) { /*For each band*/
+    for (int i=0; i < nimages; i++) { /*For each image */
+      for (int tj=0; tj <= 255; tj ++)  { /*linear search of band threshold*/
+
+      }
+    }
+  }
+
   // iftMImage ** outputLayer;
   //
   // for (int i=0; i< nimages; i++) {

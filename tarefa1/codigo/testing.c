@@ -7,7 +7,7 @@ iftImage *ReadMaskImage(char *pathname)
   iftSList *list = iftSplitString(pathname,"_");
   iftSNode *L    = list->tail;
   char      filename[200];
-  sprintf(filename,"./figs/imagens/placas/mask_%s",L->elem);
+  sprintf(filename,"../figs/imagens/placas/mask_%s",L->elem);
   mask = iftReadImageByExt(filename);
   iftDestroySList(&list);
   return(mask);
