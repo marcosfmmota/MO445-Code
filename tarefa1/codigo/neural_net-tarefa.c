@@ -1,4 +1,5 @@
 #include "include/ift.h"
+#include <math.h>
 
 typedef struct mkernel { /* multiband kernel */
   iftAdjRel *A;          /* adjacency relation */
@@ -281,7 +282,7 @@ iftMImage *SingleLayer(iftImage *img, MKernelBank *Kbank)
   }
 
   A[0]             = iftRectangular(7,3);
-  A[1]             = iftRectangular(9,9);
+  A[1]             = iftRectangular(5,5);
 
   for (int k=0; k < Kbank->nkernels; k++) {
 
@@ -355,10 +356,27 @@ void NormalizeActivationValues(iftMImage **mimg,int nimages, int maxval, NetPara
     }
 }
 
-float ComputeErrorBand(iftBand *band, iftImage *mask, float alpha, float beta)
+float ComputeErrorBand(iftBand *band, iftImage *mask, float threshold, int xsize, int ysize, float alpha, float beta)
 {
   float eij = 0.0
+  iftImage *bin = iftCreateImage(xsize, ysize);
+  int n0, n1;
 
+  n0 = n1 = 0;
+
+  for (int i=0; i < xsize*ysize; i++) {
+    if (band[i] < threshold) {
+        bin[i] = 255;
+    }
+  }
+
+  for (int i=0; i < mask->n; i++) {
+    if (bin[i] == 255 && mask[i]==0)
+      n0++;
+    else if (bin[i] == 0 && mask[i]==255)
+      n1++
+  }
+  eij = alpha*n0 + beta*n1;
   return eij;
 }
 
@@ -373,24 +391,36 @@ float ComputeAverageErrorImage(iftMImage *img, float alpha, float beta) {
 void FindBestKernelWeights(iftMImage **mimg, iftImage **mask, int nimages, NetParameters *nparam)
 {
   float *w  = nparam->weight;
-  float *bandError = NULL;
   float alpha = 1.0;
   float beta = 10 * alpha;
+  float bestTj[mimg[0]->m]; /*array for best threshold for each band */
 
-  for (int b=0; b< mimg[i]->m; i++) { /*For each band*/
-    for (int i=0; i < nimages; i++) { /*For each image */
-      for (int tj=0; tj <= 255; tj ++)  { /*linear search of band threshold*/
-
+  for (int b=0; b< mimg[0]->m; i++) { /*For each band*/
+    float mimError = IFT_INFINITY_FLT;
+    float eij = 0.0;
+    float ej[255];
+    for (int tj=0; tj <= 255; tj++)  { /*linear search of band threshold*/
+      for (int i=0; i < nimages; i++) { /*For each image */
+        eij += ComputeErrorBand(mimg[i]->band[b], mask[i], tj, mimg[i]->xsize, mimg[i]->ysize, alpha, beta);
       }
+      ej[tj] = eij/nimages;
+    }
+    float bestJ = ej[0];
+    for (int k=0; k < 255; k++) {
+      if (ej[k] < bestJ)
+        bestTj[b] = ej[k];
     }
   }
 
-  // iftMImage ** outputLayer;
-  //
-  // for (int i=0; i< nimages; i++) {
-  //
-  // }
+  /*Weight update*/
+  float sumOfBands = 0.0;
+  for (int j=0; j < mimg[0]->m; j++)
+    sumOfBands += bestTj[j];
 
+  for (int j=0; j < mimg[0]->m; j++)
+  {
+    w[j] = 1 - (bestTj[j] / sumOfBands);
+  }
 }
 
 void RegionOfPlates(iftImage **mask, int nimages, NetParameters *nparam)
