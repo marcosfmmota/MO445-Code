@@ -36,13 +36,13 @@ int main(int argc, char *argv[])
     mask[i]          = ReadMaskImage(trainSet->files[i]->path);
     if ((img->xsize != 352) || (img->ysize != 240))
       printf("imagem %s ",trainSet->files[i]->path);
+
     mimg[i]          = SingleLayer(img,Kbank);
     iftDestroyImage(&img);
   }
 
   /* Compute plate parameters and normalize activation values within
      [0,255] */
-
   NetParameters *nparam = CreateNetParameters(mimg[0]->m);
   ComputeAspectRatioParameters(mask,trainSet->n,nparam);
   RegionOfPlates(mask,trainSet->n,nparam);
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
   NormalizeActivationValues(mimg,trainSet->n,255,nparam);
 
   /* Find the best kernel weights */
-
+  
   FindBestKernelWeights(mimg,mask,trainSet->n,nparam);
 
   /* Combine bands, find optimum threshold, and apply it */

@@ -355,16 +355,16 @@ void NormalizeActivationValues(iftMImage **mimg, int nimages, int maxval,
   }
 }
 
-float ComputeErrorBand(iftImage *band, iftImage *mask, float threshold, float alpha, float beta)
+float ComputeErrorBand(float *band, iftImage *mask, float threshold, float alpha, float beta)
 {
   float eij = 0.0;
-  iftImage *bin = iftCreateImage(band->xsize, band->ysize, 0);
+  iftImage *bin = iftCreateImage(mask->xsize, mask->ysize, 1);
   int n0, n1;
 
   n0 = n1 = 0;
 
-  for (int i=0; i < band->n; i++) {
-    if (band->val[i] < threshold) {
+  for (int i=0; i < mask->n; i++) {
+    if (band[i] < threshold) {
         bin->val[i] = 255;
     }
   }
@@ -392,8 +392,7 @@ void FindBestKernelWeights(iftMImage **mimg, iftImage **mask, int nimages, NetPa
     float ej[256];
     for (int tj=0; tj <= 255; tj++)  { /*linear search of band threshold*/
       for (int i=0; i < nimages; i++) { /*For each image */
-        iftImage *bandImg = iftCreateImageFromBuffer(mimg[i]->xsize, mimg[i]->ysize, 0, (int *)mimg[i]->band[b].val);
-        eij += ComputeErrorBand(bandImg, mask[i], tj, alpha, beta);
+        eij += ComputeErrorBand(mimg[i]->band[b].val, mask[i], tj, alpha, beta);
       }
       ej[tj] = eij/nimages;
     }
@@ -504,7 +503,7 @@ void FindBestThreshold(iftMImage **cbands, iftImage **mask, int nimages, NetPara
 {
   nparam->threshold = 0.0;
   float alpha = 1.0;
-  float beta = 100 * alpha;
+  float beta = 10 * alpha;
   float e[256];
   iftImage **bin = (iftImage **)calloc(nimages,sizeof(iftImage *));
 
@@ -533,6 +532,7 @@ void FindBestThreshold(iftMImage **cbands, iftImage **mask, int nimages, NetPara
     if (minError < e[t]) {
       minError = e[t];
       bestT = (float) t;
+      printf("%f\n", minError);
     }
   }
   nparam->threshold = bestT;

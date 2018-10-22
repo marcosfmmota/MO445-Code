@@ -1,0 +1,5 @@
+./imagens/placas/orig_0003.png
+./imagens/placas/orig_0007.png
+./imagens/placas/orig_0010.png
+./imagens/placas/orig_0013.png
+./imagens/placas/orig_0017.png
