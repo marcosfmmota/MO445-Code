@@ -189,7 +189,7 @@ typedef struct ift_gval {
      * Since that <b>long</b> type is has memory size greater or equal to all integer datatypes (and their unsigned versions),
      * we've just used an only field to represent integer number.
      * The same holds to double and float, and to pointers.
-     * 
+     *
      * @warning THERE IS NO SUPPORT TO LONG LONG AND LONG DOUBLE.
      */
     union {
@@ -219,7 +219,7 @@ typedef struct ift_gval {
  * @author Samuel Martins
  * @date Jan 18, 2016
  * @ingroup DataTypes
- * 
+ *
  * Pointer types MUST BE CAST to (void*).
  * Just pass a value VAL that the correct function will be called.
  * A demo can be found in demo/Miscellaneous/iftTestGVal.c

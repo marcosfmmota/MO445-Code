@@ -329,31 +329,30 @@ void ComputeAspectRatioParameters(iftImage **mask, int nimages, NetParameters *n
   nparam->mean_height /= nimages;
 }
 
-void NormalizeActivationValues(iftMImage **mimg,int nimages, int maxval, NetParameters *nparam)
-{
+void NormalizeActivationValues(iftMImage **mimg, int nimages, int maxval,
+                               NetParameters *nparam) {
   float *maxactiv = nparam->maxactiv;
 
-    for (int i=0; i < nimages; i++){ /* For each image */
-      for (int b=0; b < mimg[i]->m; b++) { /* For each band */
-  	maxactiv[b] = 0.0;
-  	for (int p=0; p < mimg[i]->n; p++) { /* Find the maximum
-  						activation value */
-  	  if (mimg[i]->band[b].val[p] > maxactiv[b])
-  	    maxactiv[b] = mimg[i]->band[b].val[p];
-  	}
+  for (int i = 0; i < nimages; i++) {        /* For each image */
+    for (int b = 0; b < mimg[i]->m; b++) {   /* For each band */
+      for (int p = 0; p < mimg[i]->n; p++) { /* Find the maximum
+                                                activation value */
+        if (mimg[i]->band[b].val[p] > maxactiv[b])
+          maxactiv[b] = mimg[i]->band[b].val[p];
       }
     }
+  }
 
-    for (int i=0; i < nimages; i++){ /* For each image */
-      for (int b=0; b < mimg[i]->m; b++) { /* For each band */
-  	if (maxactiv[b] > 0.0){
-  	  for (int p=0; p < mimg[i]->n; p++) { /* Normalize activation values */
-  	    mimg[i]->band[b].val[p] = maxval * mimg[i]->band[b].val[p]/maxactiv[b];
-
-  	  }
-  	}
+  for (int i = 0; i < nimages; i++) {      /* For each image */
+    for (int b = 0; b < mimg[i]->m; b++) { /* For each band */
+      if (maxactiv[b] > 0.0) {
+        for (int p = 0; p < mimg[i]->n; p++) { /* Normalize activation values */
+          mimg[i]->band[b].val[p] =
+              maxval * mimg[i]->band[b].val[p] / maxactiv[b];
+        }
       }
     }
+  }
 }
 
 float ComputeErrorBand(iftBand *band, iftImage *mask, float threshold, int xsize, int ysize, float alpha, float beta)
@@ -381,18 +380,11 @@ float ComputeErrorBand(iftBand *band, iftImage *mask, float threshold, int xsize
 }
 
 
-float ComputeAverageErrorImage(iftMImage *img, float alpha, float beta) {
-  float e = 0.0;
-
-  return e;
-}
-
-
 void FindBestKernelWeights(iftMImage **mimg, iftImage **mask, int nimages, NetParameters *nparam)
 {
   float *w  = nparam->weight;
   float alpha = 1.0;
-  float beta = 10 * alpha;
+  float beta = 100 * alpha;
   float bestTj[mimg[0]->m]; /*array for best threshold for each band */
 
   for (int b=0; b< mimg[0]->m; i++) { /*For each band*/
