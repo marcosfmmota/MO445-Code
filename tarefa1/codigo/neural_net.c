@@ -484,10 +484,6 @@ iftMImage **CombineBands(iftMImage **mimg, int nimages, float *weight)
   return(cbands);
 }
 
-void FindBestThreshold(iftMImage **cbands, iftImage **mask, int nimages, NetParameters *nparam)
-{
-  nparam->threshold = 0.0;
-}
 
 iftImage **ApplyThreshold(iftMImage **cbands, int nimages, NetParameters *nparam)
 {
@@ -502,6 +498,44 @@ iftImage **ApplyThreshold(iftMImage **cbands, int nimages, NetParameters *nparam
   }
 
   return(bin);
+}
+
+void FindBestThreshold(iftMImage **cbands, iftImage **mask, int nimages, NetParameters *nparam)
+{
+  nparam->threshold = 0.0;
+  float alpha = 1.0;
+  float beta = 100 * alpha;
+  float e[256];
+  iftImage **bin = (iftImage **)calloc(nimages,sizeof(iftImage *));
+
+  for (int t=0; t <=255; t++) {
+    nparam->threshold = t;
+    bin = ApplyThreshold(cbands, nimages, nparam);
+    float ei = 0.0;
+    for (int i=0; i < nimages; i++){
+      int n0 = 0;
+      int n1 = 0;
+      for (int p=0; p < bin[i]->n; p++) {
+        if (bin[i]->val[p]==255 && mask[i]->val[p]==0)
+          n0++;
+        if (bin[i]->val[p]==0 && mask[i]->val[p]==255)
+          n1++;
+      }
+        ei += alpha*n0 + beta*n1;
+    }
+    e[t] = ei / nimages;
+  }
+
+  /*get minimum error*/
+  float minError = e[0];
+  float bestT=0.0;
+  for (int t=0; t <=255; t++){
+    if (minError < e[t]) {
+      minError = e[t];
+      bestT = (float) t;
+    }
+  }
+  nparam->threshold = bestT;
 }
 
 void SelectCompClosestTotheMeanWidthAndHeight(iftImage *label, float mean_width, float mean_height)
