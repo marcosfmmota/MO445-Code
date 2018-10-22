@@ -355,25 +355,25 @@ void NormalizeActivationValues(iftMImage **mimg, int nimages, int maxval,
   }
 }
 
-float ComputeErrorBand(iftBand *band, iftImage *mask, float threshold, int xsize, int ysize, float alpha, float beta)
+float ComputeErrorBand(iftImage *band, iftImage *mask, float threshold, float alpha, float beta)
 {
-  float eij = 0.0
-  iftImage *bin = iftCreateImage(xsize, ysize);
+  float eij = 0.0;
+  iftImage *bin = iftCreateImage(band->xsize, band->ysize, 0);
   int n0, n1;
 
   n0 = n1 = 0;
 
-  for (int i=0; i < xsize*ysize; i++) {
-    if (band[i] < threshold) {
-        bin[i] = 255;
+  for (int i=0; i < band->n; i++) {
+    if (band->val[i] < threshold) {
+        bin->val[i] = 255;
     }
   }
 
   for (int i=0; i < mask->n; i++) {
-    if (bin[i] == 255 && mask[i]==0)
+    if (bin->val[i] == 255 && mask->val[i]==0)
       n0++;
-    else if (bin[i] == 0 && mask[i]==255)
-      n1++
+    else if (bin->val[i] == 0 && mask->val[i]==255)
+      n1++;
   }
   eij = alpha*n0 + beta*n1;
   return eij;
@@ -387,18 +387,18 @@ void FindBestKernelWeights(iftMImage **mimg, iftImage **mask, int nimages, NetPa
   float beta = 100 * alpha;
   float bestTj[mimg[0]->m]; /*array for best threshold for each band */
 
-  for (int b=0; b< mimg[0]->m; i++) { /*For each band*/
-    float mimError = IFT_INFINITY_FLT;
+  for (int b=0; b< mimg[0]->m; b++) { /*For each band*/
     float eij = 0.0;
-    float ej[255];
+    float ej[256];
     for (int tj=0; tj <= 255; tj++)  { /*linear search of band threshold*/
       for (int i=0; i < nimages; i++) { /*For each image */
-        eij += ComputeErrorBand(mimg[i]->band[b], mask[i], tj, mimg[i]->xsize, mimg[i]->ysize, alpha, beta);
+        iftImage *bandImg = iftCreateImageFromBuffer(mimg[i]->xsize, mimg[i]->ysize, 0, (int *)mimg[i]->band[b].val);
+        eij += ComputeErrorBand(bandImg, mask[i], tj, alpha, beta);
       }
       ej[tj] = eij/nimages;
     }
     float bestJ = ej[0];
-    for (int k=0; k < 255; k++) {
+    for (int k=0; k <= 255; k++) {
       if (ej[k] < bestJ)
         bestTj[b] = ej[k];
     }
