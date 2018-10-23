@@ -13,6 +13,7 @@ iftImage *ReadMaskImage(char *pathname)
   return(mask);
 }
 
+
 int main(int argc, char *argv[])
 {
   iftImage  **mask;
