@@ -366,6 +366,7 @@ float ComputeErrorBand(float *band, iftImage *mask, float threshold, float alpha
   for (int i=0; i < mask->n; i++) {
     if (band[i] < threshold) {
         bin->val[i] = 255;
+        // printf("%f\n", band[i]);
     }
   }
 
@@ -375,6 +376,7 @@ float ComputeErrorBand(float *band, iftImage *mask, float threshold, float alpha
     else if (bin->val[i] == 0 && mask->val[i]==255)
       n1++;
   }
+
   eij = alpha*n0 + beta*n1;
   return eij;
 }
@@ -383,35 +385,42 @@ float ComputeErrorBand(float *band, iftImage *mask, float threshold, float alpha
 void FindBestKernelWeights(iftMImage **mimg, iftImage **mask, int nimages, NetParameters *nparam)
 {
   float *w  = nparam->weight;
-  float alpha = 1.0;
-  float beta = 100 * alpha;
+  float alpha = 0.1;
+  float beta = 10;
   float bestTj[mimg[0]->m]; /*array for best threshold for each band */
 
   for (int b=0; b< mimg[0]->m; b++) { /*For each band*/
-    float eij = 0.0;
-    float ej[256];
+    float ej[256]; /*Array of error for each threshold*/
+    // printf("Band %d\n", b);
     for (int tj=0; tj <= 255; tj++)  { /*linear search of band threshold*/
+      // printf("Threshold %d\n", tj);
+      float eij = 0.0;
       for (int i=0; i < nimages; i++) { /*For each image */
-        eij += ComputeErrorBand(mimg[i]->band[b].val, mask[i], tj, alpha, beta);
+        eij += ComputeErrorBand(mimg[i]->band[b].val, mask[i], (float) tj, alpha, beta);
       }
-      ej[tj] = eij/nimages;
+      ej[tj] = eij / (float) nimages;
     }
+
     float bestJ = ej[0];
     for (int k=0; k <= 255; k++) {
-      if (ej[k] < bestJ)
-        bestTj[b] = ej[k];
+      if (ej[k] < bestJ) {
+        bestJ = ej[k];
+        bestTj[b] = bestJ;
+      }
     }
   }
 
   /*Weight update*/
   float sumOfBands = 0.0;
   for (int j=0; j < mimg[0]->m; j++)
+  {
     sumOfBands += bestTj[j];
+  }
+
 
   for (int j=0; j < mimg[0]->m; j++)
-  {
     w[j] = 1 - (bestTj[j] / sumOfBands);
-  }
+    
 }
 
 void RegionOfPlates(iftImage **mask, int nimages, NetParameters *nparam)
@@ -491,8 +500,9 @@ iftImage **ApplyThreshold(iftMImage **cbands, int nimages, NetParameters *nparam
   for (int i=0; i < nimages; i++) {
     bin[i] = iftCreateImage(cbands[i]->xsize,cbands[i]->ysize,cbands[i]->zsize);
     for (int p=0; p < bin[i]->n; p++) {
-      if (cbands[i]->band[0].val[p] >= nparam->threshold)
-  	bin[i]->val[p]=255;
+      if (cbands[i]->band[0].val[p] >= nparam->threshold){
+        bin[i]->val[p]=255;
+      }
     }
   }
 
@@ -505,23 +515,14 @@ void FindBestThreshold(iftMImage **cbands, iftImage **mask, int nimages, NetPara
   float alpha = 1.0;
   float beta = 10 * alpha;
   float e[256];
+  iftImage **bin;
 
-  for (int j=0; j <=255; j++) {
-    e[j] = 0.0;
-  }
-
-  iftImage **bin = (iftImage **)calloc(nimages,sizeof(iftImage *));
 
   for (int t=0; t <=255; t++) {
-
+    nparam->threshold = (float) t;
     /*Applying threshold on images*/
-    for (int i=0; i < nimages; i++) {
-      bin[i] = iftCreateImage(cbands[i]->xsize,cbands[i]->ysize,cbands[i]->zsize);
-      for (int p=0; p < bin[i]->n; p++) {
-        if (cbands[i]->band[0].val[p] >= (float) t)
-    	bin[i]->val[p]=255;
-      }
-    }
+    bin = ApplyThreshold(cbands, nimages, nparam);
+
     /*Computing error array*/
     float ei = 0.0;
     for (int i=0; i < nimages; i++){
@@ -533,7 +534,10 @@ void FindBestThreshold(iftMImage **cbands, iftImage **mask, int nimages, NetPara
         if (bin[i]->val[p]==0 && mask[i]->val[p]==255)
           n1++;
       }
+
+        // printf("%d %d\n", n0, n1);
         ei += alpha*n0 + beta*n1;
+
     }
     e[t] = ei / nimages;
   }
@@ -545,7 +549,6 @@ void FindBestThreshold(iftMImage **cbands, iftImage **mask, int nimages, NetPara
     if (minError < e[t]) {
       minError = e[t];
       bestT = (float) t;
-      printf("%f\n", minError);
     }
   }
   nparam->threshold = bestT;
