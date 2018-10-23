@@ -34,6 +34,8 @@ int main(int argc, char *argv[])
     printf("Processing file %s\n",trainSet->files[i]->path);
     iftImage  *img   = iftReadImageByExt(trainSet->files[i]->path);
     mask[i]          = ReadMaskImage(trainSet->files[i]->path);
+    if (mask[i] == NULL)
+      printf("Mask NULL");
     if ((img->xsize != 352) || (img->ysize != 240))
       printf("imagem %s ",trainSet->files[i]->path);
 
@@ -50,7 +52,7 @@ int main(int argc, char *argv[])
   NormalizeActivationValues(mimg,trainSet->n,255,nparam);
 
   /* Find the best kernel weights */
-  
+
   FindBestKernelWeights(mimg,mask,trainSet->n,nparam);
 
   /* Combine bands, find optimum threshold, and apply it */

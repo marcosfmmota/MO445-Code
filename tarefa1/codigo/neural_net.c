@@ -505,11 +505,24 @@ void FindBestThreshold(iftMImage **cbands, iftImage **mask, int nimages, NetPara
   float alpha = 1.0;
   float beta = 10 * alpha;
   float e[256];
+
+  for (int j=0; j <=255; j++) {
+    e[j] = 0.0;
+  }
+
   iftImage **bin = (iftImage **)calloc(nimages,sizeof(iftImage *));
 
   for (int t=0; t <=255; t++) {
-    nparam->threshold = t;
-    bin = ApplyThreshold(cbands, nimages, nparam);
+
+    /*Applying threshold on images*/
+    for (int i=0; i < nimages; i++) {
+      bin[i] = iftCreateImage(cbands[i]->xsize,cbands[i]->ysize,cbands[i]->zsize);
+      for (int p=0; p < bin[i]->n; p++) {
+        if (cbands[i]->band[0].val[p] >= (float) t)
+    	bin[i]->val[p]=255;
+      }
+    }
+    /*Computing error array*/
     float ei = 0.0;
     for (int i=0; i < nimages; i++){
       int n0 = 0;
@@ -536,6 +549,8 @@ void FindBestThreshold(iftMImage **cbands, iftImage **mask, int nimages, NetPara
     }
   }
   nparam->threshold = bestT;
+
+  iftFree(bin);
 }
 
 void SelectCompClosestTotheMeanWidthAndHeight(iftImage *label, float mean_width, float mean_height)
@@ -603,8 +618,8 @@ void PostProcess(iftImage **bin, int nimages, NetParameters *nparam)
 
     for (u.y = uo.y; u.y <= uf.y; u.y++)
       for (u.x = uo.x; u.x <= uf.x; u.x++){
-	int p = iftGetVoxelIndex(bin[i],u);
-	bin[i]->val[p]=255;
+	       int p = iftGetVoxelIndex(bin[i],u);
+	       bin[i]->val[p]=255;
       }
   }
 
