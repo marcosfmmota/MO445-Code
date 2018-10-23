@@ -56,7 +56,9 @@ int main(int argc, char *argv[])
   /* Post-process binary images and write results on training set */
 
   PostProcess(bin,testSet->n, nparam);
+  float avgError = AverageErrorThreshold(cbands, mask, testSet->n, nparam);
   WriteResults(testSet,bin);
+  printf("Average error for test threshold: %.2f\n", avgError);
 
   /* Free memory */
 
