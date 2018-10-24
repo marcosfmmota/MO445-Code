@@ -22,6 +22,24 @@ typedef struct net_parameters { /* parameters of the system */
   float  mean_width, mean_height; /* mean width and height of the plates */
 } NetParameters;
 
+/*type to hold a matrix representation of a MImage*/
+typedef struct image_matrix {
+  iftMatrix *mat;
+  int nband;
+} MImageMatrix;
+
+// MImageMatrix *CreateMImageMatrix(iftMImage *mimg) {
+//
+// }
+//
+// iftMImage *CreateMImageFromMatrix(MImageMatrix *matx) {
+//
+// }
+//
+// iftMatrix *MBanksToMatrix(MKernelBank *kbank) {
+//
+// }
+
 NetParameters *CreateNetParameters(int nkernels)
 {
   NetParameters *nparam=(NetParameters *)calloc(1,sizeof(NetParameters));
@@ -244,6 +262,33 @@ iftMImage  *MinPooling(iftMImage *mult_img, iftAdjRel *A)
 
   return(pool_img);
 }
+
+/*Single Layer using Matrix Convolution*/
+// iftMImage *MatrixSingleLayer(iftMImage *mult_img, MKernel *K) {
+//
+//   iftMImage *filt_img=iftCreateMImage(mult_img->xsize,mult_img->ysize,mult_img->zsize,1);
+//   iftMatrix *kbanksMatrix;
+//   MImageMatrix *imgMatrix;
+//   iftMatrix *result;
+//   iftAdjRel *A[2];
+//
+//   kbanksMatrix = MBanksToMatrix(K);
+//   imgMatrix = CreateMImageMatrix(mult_img);
+//   result = iftMultMatrices(kbanksMatrix, imgMatrix->mat);
+//   filt_img = CreateMImageFromMatrix(result);
+//
+//   A[0]             = iftRectangular(7,3);
+//   A[1]             = iftRectangular(5,5);
+//
+//   filt_img = ReLu(filt_img);
+//   filt_img = MaxPooling(filt_img, A[0]);
+//   filt_img = MinPooling(filt_img, A[1]);
+//
+//   for (int i = 0; i < 2; i++)
+//     iftDestroyAdjRel(&A[i]);
+//
+//   return filt_img;
+// }
 
 iftMImage *Convolution(iftMImage *mult_img, MKernel *K)
 {
