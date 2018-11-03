@@ -1,0 +1,39 @@
+Para compilar
+
+make iftSegmentObject
+
+Para executar
+
+chmod +x run.sh 
+./run.sh
+
+veja como os programas são chamados nesses scripts.
+
+Esta tarefa envolve o delineamento de objetos cujos marcadores são
+dados em conjunto com as imagens em ./data. Em iftSegmentObject.c
+vocês irão encontrar três funções de delineamento de objeto: (a)
+iftDelineateObjectRegion, (b) iftDelineateObjectByWatershed, e (c)
+iftDelineateObjectByOrientedWatershed. Vocês também irão encontrar uma
+função iftConnectInternalSeeds para connectar as sementes internas de
+modo a aumentar automaticamente o número delas. Esta estratégia é útil
+para reduzir o número de sementes que o usuário precisa marcar,
+principalmente no caso de objetos longos com partes finas, como é o
+caso do bird.png.
+
+Suas atividades são:
+
+1. Completar em iftSegmentObject.c os códigos de (a), (b), e (c)
+conforme visto em aula. Mais instruções são dadas no código.
+
+2. Ler o artigo 2018_Bragantini_CIARP_DynIFT.pdf e acrescentar a
+função para segmentar o objeto usando a IFT dinâmica com peso w5.
+
+3. Avaliar os quatro métodos em iftSegmentObject.c com e sem a função
+iftConnectInternalSeeds e com e sem orientação (comentando as linhas
+relacionadas a orientação). A conexão de sementes internas não deve
+fazer muito efeito nos exemplos de marcação dados, mas você pode
+visualizar se ela está correta descomentando a função
+iftMyDrawBinaryLabeledSeeds. Responda sobre a importância da
+orientação no delineamento, quando muda alpha, apresentando os
+resultados. Compare os quatro métodos.
+
