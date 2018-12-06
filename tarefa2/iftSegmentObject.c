@@ -255,14 +255,158 @@ iftLabeledSet *iftConnectInternalSeeds(iftLabeledSet *seeds, iftImage *objmap)
 
 iftImage *iftDelineateObjectByWatershed(iftFImage *weight, iftLabeledSet *seeds) {
 
-  iftImage   *label = NULL;
+
+  iftImage   *w_image = iftFImageToImage(weight, iftFMaximumValue(weight));
+  iftImage   *label = iftCreateImage(weight->xsize, weight->ysize, weight->zsize);
+  iftImage   *pathval = NULL, *pred = NULL;
+  iftGQueue  *Q = NULL;
+  int         i, p, q, Wmax = iftMaximumValue(w_image);
+  iftVoxel    u, v;
+  iftAdjRel     *A = NULL;
+  iftLabeledSet *S = NULL;
+  float  tmp;
+
+  // Initialization
+  pathval  = iftCreateImage(weight->xsize, weight->ysize, weight->zsize);
+  pred     = iftCreateImage(weight->xsize, weight->ysize, weight->zsize);
+  Q        = iftCreateGQueue(Wmax, w_image->n, w_image->val);
+  A = iftCircular(1.0);
+
+  for (p = 0; p < w_image->n; p++)
+  {
+    pathval->val[p] = IFT_INFINITY_INT;
+  }
+
+  S = seeds;
+  while (S != NULL)
+  {
+    p = S->elem;
+    pred->val[p]    = IFT_NIL;
+    pathval->val[p] = 0;
+    label->val[p] = S->label;
+    iftInsertGQueue(&Q,p);
+    // break;
+    S = S->next;
+  }
+
+  /* Image Foresting Transform */
+
+  while (!iftEmptyGQueue(Q))
+  {
+    p = iftRemoveGQueue(Q);
+    u = iftGetVoxelCoord(w_image, p);
+
+    for (i = 1; i < A->n; i++)
+    {
+      v = iftGetAdjacentVoxel(A, u, i);
+      if (iftValidVoxel(w_image, v))
+      {
+        // pidx = iftGetVoxelIndex(objmap,u)
+        q = iftGetVoxelIndex(w_image, v);
+        if (Q->L.elem[q].color != IFT_BLACK)
+        {
+
+          float Di = sqrtf(w_image->val[p]*w_image->val[p] - w_image->val[q]*w_image->val[q]);
+          //Computes the max function
+          tmp = (Di > pathval->val[p]) ? Di : pathval->val[p];
+          if (tmp < pathval->val[q]){
+            if (Q->L.elem[q].color == IFT_GRAY)
+            iftRemoveGQueueElem(Q,q);
+            pred->val[q]     = p;
+            pathval->val[q]  = tmp;
+            label->val[q] = label->val[p];
+            iftInsertGQueue(&Q, q);
+          }
+        }
+      }
+    }
+  }
+
+  iftDestroyAdjRel(&A);
+  iftDestroyGQueue(&Q);
+  iftDestroyImage(&pathval);
+  iftDestroyImage(&pred);
+
 
   return (label);
+
 }
 
 iftImage *iftDelineateObjectByOrientedWatershed(iftFImage *weight, iftImage *objmap, iftLabeledSet *seeds) {
 
-  iftImage   *label = NULL;
+  iftImage   *label = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
+  iftImage   *pathval = NULL, *pred = NULL;
+  iftGQueue  *Q = NULL;
+  int         i, p, q, Omax=iftMaximumValue(objmap);
+  iftVoxel    u, v;
+  iftAdjRel     *A = NULL;
+  iftLabeledSet *S = NULL;
+  float tmp;
+
+
+  // Initialization
+  pathval  = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
+  pred     = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
+  Q        = iftCreateGQueue(Omax+1, objmap->n, pathval->val);
+  A = iftCircular(1.0);
+
+  for (p = 0; p < weight->n; p++)
+  {
+    pathval->val[p] = IFT_INFINITY_INT;
+  }
+
+
+  S = seeds;
+  while (S != NULL)
+  {
+    p = S->elem;
+    pred->val[p]    = IFT_NIL;
+    pathval->val[p] = 0;
+    label->val[p] = S->label;
+    iftInsertGQueue(&Q,p);
+    // break;
+    S = S->next;
+  }
+
+  /* Image Foresting Transform */
+
+  while (!iftEmptyGQueue(Q))
+  {
+    p = iftRemoveGQueue(Q);
+    u = iftGetVoxelCoord(objmap, p);
+
+    for (i = 1; i < A->n; i++)
+    {
+      v = iftGetAdjacentVoxel(A, u, i);
+      if (iftValidVoxel(objmap, v))
+      {
+        // pidx = iftGetVoxelIndex(objmap,u)
+        q = iftGetVoxelIndex(objmap, v);
+        if (Q->L.elem[q].color != IFT_BLACK)
+        {
+
+          float Di = sqrtf(weight->val[p]*weight->val[p] - weight->val[q]*weight->val[q]);
+          //  printf("<%f, %f>\n", alpha*Do, (1 - alpha)*Di);
+          //Computes the max function
+          tmp = (Di > pathval->val[p]) ? Di : pathval->val[p];
+          if (tmp < pathval->val[q]){
+            if (Q->L.elem[q].color == IFT_GRAY)
+            iftRemoveGQueueElem(Q,q);
+            pred->val[q]     = p;
+            pathval->val[q]  = tmp;
+            label->val[q] = label->val[p];
+            iftInsertGQueue(&Q, q);
+          }
+        }
+      }
+    }
+  }
+
+  iftDestroyAdjRel(&A);
+  iftDestroyGQueue(&Q);
+  iftDestroyImage(&pathval);
+  iftDestroyImage(&pred);
+
 
   return (label);
 }
@@ -278,9 +422,10 @@ iftImage *iftDelineateObjectRegion(iftMImage *mimg, iftImage *objmap, iftLabeled
   int         i, p, q, Omax=iftMaximumValue(objmap);
   iftVoxel    u, v;
   iftAdjRel     *A = NULL;
-  iftLabeledSet *S = NULL, *newS=NULL;;
+  iftLabeledSet *S = NULL;
   float K = 1.2;
   float Featp[mimg->m], Featq[mimg->m], tmp;
+
 
   // Initialization
   pathval  = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
@@ -349,6 +494,7 @@ iftImage *iftDelineateObjectRegion(iftMImage *mimg, iftImage *objmap, iftLabeled
   iftDestroyAdjRel(&A);
   iftDestroyGQueue(&Q);
   iftDestroyImage(&pathval);
+  iftDestroyImage(&pred);
 
 
   return (label);
@@ -406,7 +552,7 @@ int main(int argc, char *argv[])
   objmap = iftObjectMap(mimg, training_set, Imax);
   iftWriteImageByExt(objmap,"objmap.png");
 
-  iftFImage *weight = iftArcWeightImage(mimg,objmap,alpha,C);
+  iftFImage *weight = iftArcWeightImage(mimg,NULL,0.0,C);
   aux  = iftFImageToImage(weight,Imax);
   iftWriteImageByExt(aux,"weight.png");
 
@@ -422,8 +568,8 @@ int main(int argc, char *argv[])
   w5 as in the paper. */
 
   iftImage *label = NULL;
-  label = iftDelineateObjectRegion(mimg,objmap,seeds,alpha);
-  //label = iftDelineateObjectByWatershed(weight,seeds);
+  // label = iftDelineateObjectRegion(mimg,objmap,seeds,alpha);
+  label = iftDelineateObjectByWatershed(weight,seeds);
   //label = iftDelineateObjectByOrientedWatershed(weight,objmap,seeds);
 
   /* Draw segmentation border */
