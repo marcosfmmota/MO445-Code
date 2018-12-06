@@ -275,11 +275,12 @@ iftImage *iftDelineateObjectRegion(iftMImage *mimg, iftImage *objmap, iftLabeled
   iftImage   *label = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
   iftImage   *pathval = NULL, *pred = NULL;
   iftGQueue  *Q = NULL;
-  int         i, p, q, tmp, Omax=iftMaximumValue(objmap);
+  int         i, p, q, Omax=iftMaximumValue(objmap);
   iftVoxel    u, v;
   iftAdjRel     *A = NULL;
   iftLabeledSet *S = NULL;
   float K = 1.2;
+  float Featp[mimg->m], Featq[mimg->m], tmp;
 
   // Initialization
   pathval  = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
@@ -296,18 +297,15 @@ iftImage *iftDelineateObjectRegion(iftMImage *mimg, iftImage *objmap, iftLabeled
   while (S != NULL)
   {
     p = S->elem;
-    if (S->label > 0){
-      pred->val[p]    = IFT_NIL;
-      pathval->val[p] = 0;
-      iftInsertGQueue(&Q,p);
-      // printf("%d\n", p);
-      // break;
-    }
+    pred->val[p]    = IFT_NIL;
+    pathval->val[p] = 0;
+    iftInsertGQueue(&Q,p);
+    // break;
     S = S->next;
   }
 
   /* Image Foresting Transform */
-  int c = 0;
+  
   while (!iftEmptyGQueue(Q))
   {
     p = iftRemoveGQueue(Q);
@@ -316,7 +314,6 @@ iftImage *iftDelineateObjectRegion(iftMImage *mimg, iftImage *objmap, iftLabeled
     for (i = 1; i < A->n; i++)
     {
       v = iftGetAdjacentVoxel(A, u, i);
-
       if (iftValidVoxel(objmap, v))
       {
         // pidx = iftGetVoxelIndex(objmap,u)
@@ -324,23 +321,20 @@ iftImage *iftDelineateObjectRegion(iftMImage *mimg, iftImage *objmap, iftLabeled
         if (Q->L.elem[q].color != IFT_BLACK)
         {
           int Do = objmap->val[p] - objmap->val[q];
-          int Dip = 0;
-          int Diq = 0 ;
-          for (int j = 0; j < mimg->m; j++)
-          {
-            Dip += mimg->band[j].val[p] * mimg->band[j].val[p];
-            Diq += mimg->band[j].val[q] * mimg->band[j].val[q];
+          if ( Do < 0) Do *= -1;
+
+          for (int f=0; f < mimg->m; f++) {
+            Featp[f] = mimg->band[f].val[p];
+            Featq[f] = mimg->band[f].val[q];
           }
-          float Di = sqrtf(Dip - Diq);
-          float dpq = K*(alpha*Do + (1 + alpha)*Di);
-          float temp;
+          float Di = iftFeatDistance(Featp,Featq,mimg->m);
+          float dpq = K*(alpha*Do + (1 - alpha)*Di);
+
           //Computes the max function
-          temp = (dpq > pathval->val[p]) ? dpq : pathval->val[q];
-          printf("%f\n", temp);
-          if (temp < pathval->val[q]){
-            // if (Q->L.elem[q].color == IFT_GRAY)
-            // iftRemoveGQueueElem(Q,q);
-            c++;
+          tmp = (dpq > pathval->val[p]) ? dpq : pathval->val[p];
+          if (tmp < pathval->val[q]){
+            if (Q->L.elem[q].color == IFT_GRAY)
+            iftRemoveGQueueElem(Q,q);
             pred->val[q]     = p;
             pathval->val[q]  = tmp;
             iftInsertGQueue(&Q, q);
@@ -352,22 +346,22 @@ iftImage *iftDelineateObjectRegion(iftMImage *mimg, iftImage *objmap, iftLabeled
 
   iftDestroyAdjRel(&A);
   iftDestroyGQueue(&Q);
-  // iftDestroyImage(&pathval);
-
-  S = seeds;
-  while (S != NULL){
-    p = S->elem;
-    if (S->label > 0){
-      q = p;
-      while (pred->val[q] != IFT_NIL){
-        if(iftLabeledSetHasElement(S, q)==0) {
-          iftInsertLabeledSet(&S,q,1);
-        }
-        q = pred->val[q];
-      }
-    }
-    S = S->next;
-  }
+  iftDestroyImage(&pathval);
+  //
+  // S = seeds;
+  // while (S != NULL){
+  //   p = S->elem;
+  //   if (S->label > 0){
+  //     q = p;
+  //     while (pred->val[q] != IFT_NIL){
+  //       if(iftLabeledSetHasElement(S, q)==0) {
+  //         iftInsertLabeledSet(&S,q,1);
+  //       }
+  //       q = pred->val[q];
+  //     }
+  //   }
+  //   S = S->next;
+  // }
 
   return (pred);
 }
