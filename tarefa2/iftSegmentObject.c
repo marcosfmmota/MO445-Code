@@ -253,6 +253,7 @@ iftLabeledSet *iftConnectInternalSeeds(iftLabeledSet *seeds, iftImage *objmap)
    return (newS);
  }
 
+/*Use weight image to compute gradient watershed delineation*/
 iftImage *iftDelineateObjectByWatershed(iftFImage *weight, iftLabeledSet *seeds) {
 
 
@@ -305,7 +306,6 @@ iftImage *iftDelineateObjectByWatershed(iftFImage *weight, iftLabeledSet *seeds)
         q = iftGetVoxelIndex(w_image, v);
         if (Q->L.elem[q].color != IFT_BLACK)
         {
-
           float Di = sqrtf(w_image->val[p]*w_image->val[p] - w_image->val[q]*w_image->val[q]);
           //Computes the max function
           tmp = (Di > pathval->val[p]) ? Di : pathval->val[p];
@@ -334,27 +334,26 @@ iftImage *iftDelineateObjectByWatershed(iftFImage *weight, iftLabeledSet *seeds)
 
 iftImage *iftDelineateObjectByOrientedWatershed(iftFImage *weight, iftImage *objmap, iftLabeledSet *seeds) {
 
-  iftImage   *label = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
+  iftImage   *w_image = iftFImageToImage(weight, iftFMaximumValue(weight));
+  iftImage   *label = iftCreateImage(weight->xsize, weight->ysize, weight->zsize);
   iftImage   *pathval = NULL, *pred = NULL;
   iftGQueue  *Q = NULL;
-  int         i, p, q, Omax=iftMaximumValue(objmap);
+  int         i, p, q, Omax = iftMaximumValue(objmap);
   iftVoxel    u, v;
   iftAdjRel     *A = NULL;
   iftLabeledSet *S = NULL;
-  float tmp;
-
+  float  tmp, K=1.5;
 
   // Initialization
-  pathval  = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
-  pred     = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
-  Q        = iftCreateGQueue(Omax+1, objmap->n, pathval->val);
+  pathval  = iftCreateImage(weight->xsize, weight->ysize, weight->zsize);
+  pred     = iftCreateImage(weight->xsize, weight->ysize, weight->zsize);
+  Q        = iftCreateGQueue(Omax, objmap->n, objmap->val);
   A = iftCircular(1.0);
 
-  for (p = 0; p < weight->n; p++)
+  for (p = 0; p < w_image->n; p++)
   {
     pathval->val[p] = IFT_INFINITY_INT;
   }
-
 
   S = seeds;
   while (S != NULL)
@@ -382,11 +381,18 @@ iftImage *iftDelineateObjectByOrientedWatershed(iftFImage *weight, iftImage *obj
       {
         // pidx = iftGetVoxelIndex(objmap,u)
         q = iftGetVoxelIndex(objmap, v);
-        if (Q->L.elem[q].color != IFT_BLACK)
+        if (Q->L.elem[q].color != IFT_BLACK && w_image->val[q] > w_image->val[p])
         {
+          if (objmap->val[p] > objmap->val[q] && label[p] > 0){
 
-          float Di = sqrtf(weight->val[p]*weight->val[p] - weight->val[q]*weight->val[q]);
-          //  printf("<%f, %f>\n", alpha*Do, (1 - alpha)*Di);
+          }
+          else if (objmap->val[p] < objmap->val[q] && label[p] == 0) {
+
+          }
+          else {
+              float Di = sqrtf(w_image->val[p]*w_image->val[p] - w_image->val[q]*w_image->val[q]);
+          }
+
           //Computes the max function
           tmp = (Di > pathval->val[p]) ? Di : pathval->val[p];
           if (tmp < pathval->val[q]){
@@ -409,6 +415,7 @@ iftImage *iftDelineateObjectByOrientedWatershed(iftFImage *weight, iftImage *obj
 
 
   return (label);
+
 }
 
 /* This function must delineate the object from internal and external
@@ -552,7 +559,8 @@ int main(int argc, char *argv[])
   objmap = iftObjectMap(mimg, training_set, Imax);
   iftWriteImageByExt(objmap,"objmap.png");
 
-  iftFImage *weight = iftArcWeightImage(mimg,NULL,0.0,C);
+  iftFImage *weight = iftArcWeightImage(mimg,objmap,alpha,C);
+  // iftFImage *weight = iftArcWeightImage(mimg,NULL,0.0,C);
   aux  = iftFImageToImage(weight,Imax);
   iftWriteImageByExt(aux,"weight.png");
 
@@ -569,8 +577,8 @@ int main(int argc, char *argv[])
 
   iftImage *label = NULL;
   // label = iftDelineateObjectRegion(mimg,objmap,seeds,alpha);
-  label = iftDelineateObjectByWatershed(weight,seeds);
-  //label = iftDelineateObjectByOrientedWatershed(weight,objmap,seeds);
+  // label = iftDelineateObjectByWatershed(weight,seeds);
+  label = iftDelineateObjectByOrientedWatershed(weight,objmap,seeds);
 
   /* Draw segmentation border */
 
