@@ -339,15 +339,17 @@ iftImage *iftDelineateObjectByOrientedWatershed(iftFImage *weight, iftImage *obj
   iftImage   *pathval = NULL, *pred = NULL;
   iftGQueue  *Q = NULL;
   int         i, p, q, Omax = iftMaximumValue(objmap);
+  int         Wmax = iftMaximumValue(w_image);
   iftVoxel    u, v;
   iftAdjRel     *A = NULL;
   iftLabeledSet *S = NULL;
-  float  tmp, K=1.5;
+  float  tmp, K=1.2;
 
   // Initialization
   pathval  = iftCreateImage(weight->xsize, weight->ysize, weight->zsize);
   pred     = iftCreateImage(weight->xsize, weight->ysize, weight->zsize);
-  Q        = iftCreateGQueue(Omax, objmap->n, objmap->val);
+  Q        = iftCreateGQueue(Wmax, w_image->n, w_image->val);
+  // Q        = iftCreateGQueue(Omax, objmap->n, objmap->val);
   A = iftCircular(1.0);
 
   for (p = 0; p < w_image->n; p++)
@@ -379,22 +381,24 @@ iftImage *iftDelineateObjectByOrientedWatershed(iftFImage *weight, iftImage *obj
       v = iftGetAdjacentVoxel(A, u, i);
       if (iftValidVoxel(objmap, v))
       {
-        // pidx = iftGetVoxelIndex(objmap,u)
+
         q = iftGetVoxelIndex(objmap, v);
         if (Q->L.elem[q].color != IFT_BLACK && w_image->val[q] > w_image->val[p])
         {
-          if (objmap->val[p] > objmap->val[q] && label[p] > 0){
-
+          int Do = objmap->val[p] - objmap->val[q];
+          if ( Do < 0) Do *= -1;
+          float Di = sqrtf(w_image->val[p]*w_image->val[p] - w_image->val[q]*w_image->val[q]);
+          // float dpq = K*(alpha*Do + (1 - alpha)*Di);
+          float dpq = Di;
+          if (objmap->val[p] > objmap->val[q] && label->val[p] > 0){
+              dpq = pow(dpq, 1.5);
           }
-          else if (objmap->val[p] < objmap->val[q] && label[p] == 0) {
-
-          }
-          else {
-              float Di = sqrtf(w_image->val[p]*w_image->val[p] - w_image->val[q]*w_image->val[q]);
+          else if (objmap->val[p] < objmap->val[q] && label->val[p] == 0) {
+              dpq = pow(dpq, 1.5);
           }
 
           //Computes the max function
-          tmp = (Di > pathval->val[p]) ? Di : pathval->val[p];
+          tmp = (dpq > w_image->val[p]) ? dpq : w_image->val[p];
           if (tmp < pathval->val[q]){
             if (Q->L.elem[q].color == IFT_GRAY)
             iftRemoveGQueueElem(Q,q);
@@ -568,7 +572,7 @@ int main(int argc, char *argv[])
   /* to use or not this function, change comments below */
   iftLabeledSet *seeds = iftConnectInternalSeeds(training_set, objmap);
   iftDestroyLabeledSet(&training_set);
-  //iftLabeledSet *seeds = training_set;
+  // iftLabeledSet *seeds = training_set;
 
 
   /* to exchange across the three methods, change the comments
@@ -576,14 +580,14 @@ int main(int argc, char *argv[])
   w5 as in the paper. */
 
   iftImage *label = NULL;
-  // label = iftDelineateObjectRegion(mimg,objmap,seeds,alpha);
+  label = iftDelineateObjectRegion(mimg,objmap,seeds,alpha);
   // label = iftDelineateObjectByWatershed(weight,seeds);
-  label = iftDelineateObjectByOrientedWatershed(weight,objmap,seeds);
+  // label = iftDelineateObjectByOrientedWatershed(weight,objmap,seeds);
 
   /* Draw segmentation border */
 
   iftDrawBorders(img, label, A, YCbCr, B);
-  // iftMyDrawBinaryLabeledSeeds(img,seeds,YCbCr,A);
+  iftMyDrawBinaryLabeledSeeds(img,seeds,YCbCr,A);
 
   iftWriteImageByExt(img,argv[4]);
 
