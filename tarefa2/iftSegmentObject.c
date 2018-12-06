@@ -338,12 +338,12 @@ iftImage *iftDelineateObjectByOrientedWatershed(iftFImage *weight, iftImage *obj
   iftImage   *label = iftCreateImage(weight->xsize, weight->ysize, weight->zsize);
   iftImage   *pathval = NULL, *pred = NULL;
   iftGQueue  *Q = NULL;
-  int         i, p, q, Omax = iftMaximumValue(objmap);
+  int         i, p, q;
   int         Wmax = iftMaximumValue(w_image);
   iftVoxel    u, v;
   iftAdjRel     *A = NULL;
   iftLabeledSet *S = NULL;
-  float  tmp, K=1.2;
+  float  tmp;
 
   // Initialization
   pathval  = iftCreateImage(weight->xsize, weight->ysize, weight->zsize);
@@ -383,10 +383,10 @@ iftImage *iftDelineateObjectByOrientedWatershed(iftFImage *weight, iftImage *obj
       {
 
         q = iftGetVoxelIndex(objmap, v);
-        if (Q->L.elem[q].color != IFT_BLACK && w_image->val[q] > w_image->val[p])
+        if (Q->L.elem[q].color != IFT_BLACK)
         {
-          int Do = objmap->val[p] - objmap->val[q];
-          if ( Do < 0) Do *= -1;
+          // int Do = objmap->val[p] - objmap->val[q];
+          // if ( Do < 0) Do *= -1;
           float Di = sqrtf(w_image->val[p]*w_image->val[p] - w_image->val[q]*w_image->val[q]);
           // float dpq = K*(alpha*Do + (1 - alpha)*Di);
           float dpq = Di;
@@ -587,7 +587,7 @@ int main(int argc, char *argv[])
   /* Draw segmentation border */
 
   iftDrawBorders(img, label, A, YCbCr, B);
-  iftMyDrawBinaryLabeledSeeds(img,seeds,YCbCr,A);
+  // iftMyDrawBinaryLabeledSeeds(img,seeds,YCbCr,A);
 
   iftWriteImageByExt(img,argv[4]);
 
