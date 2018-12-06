@@ -278,7 +278,7 @@ iftImage *iftDelineateObjectRegion(iftMImage *mimg, iftImage *objmap, iftLabeled
   int         i, p, q, Omax=iftMaximumValue(objmap);
   iftVoxel    u, v;
   iftAdjRel     *A = NULL;
-  iftLabeledSet *S = NULL;
+  iftLabeledSet *S = NULL, *newS=NULL;;
   float K = 1.2;
   float Featp[mimg->m], Featq[mimg->m], tmp;
 
@@ -293,19 +293,21 @@ iftImage *iftDelineateObjectRegion(iftMImage *mimg, iftImage *objmap, iftLabeled
     pathval->val[p] = IFT_INFINITY_INT;
   }
 
+
   S = seeds;
   while (S != NULL)
   {
     p = S->elem;
     pred->val[p]    = IFT_NIL;
     pathval->val[p] = 0;
+    label->val[p] = S->label;
     iftInsertGQueue(&Q,p);
     // break;
     S = S->next;
   }
 
   /* Image Foresting Transform */
-  
+
   while (!iftEmptyGQueue(Q))
   {
     p = iftRemoveGQueue(Q);
@@ -322,14 +324,13 @@ iftImage *iftDelineateObjectRegion(iftMImage *mimg, iftImage *objmap, iftLabeled
         {
           int Do = objmap->val[p] - objmap->val[q];
           if ( Do < 0) Do *= -1;
-
           for (int f=0; f < mimg->m; f++) {
             Featp[f] = mimg->band[f].val[p];
             Featq[f] = mimg->band[f].val[q];
           }
           float Di = iftFeatDistance(Featp,Featq,mimg->m);
           float dpq = K*(alpha*Do + (1 - alpha)*Di);
-
+          //  printf("<%f, %f>\n", alpha*Do, (1 - alpha)*Di);
           //Computes the max function
           tmp = (dpq > pathval->val[p]) ? dpq : pathval->val[p];
           if (tmp < pathval->val[q]){
@@ -337,6 +338,7 @@ iftImage *iftDelineateObjectRegion(iftMImage *mimg, iftImage *objmap, iftLabeled
             iftRemoveGQueueElem(Q,q);
             pred->val[q]     = p;
             pathval->val[q]  = tmp;
+            label->val[q] = label->val[p];
             iftInsertGQueue(&Q, q);
           }
         }
@@ -347,23 +349,9 @@ iftImage *iftDelineateObjectRegion(iftMImage *mimg, iftImage *objmap, iftLabeled
   iftDestroyAdjRel(&A);
   iftDestroyGQueue(&Q);
   iftDestroyImage(&pathval);
-  //
-  // S = seeds;
-  // while (S != NULL){
-  //   p = S->elem;
-  //   if (S->label > 0){
-  //     q = p;
-  //     while (pred->val[q] != IFT_NIL){
-  //       if(iftLabeledSetHasElement(S, q)==0) {
-  //         iftInsertLabeledSet(&S,q,1);
-  //       }
-  //       q = pred->val[q];
-  //     }
-  //   }
-  //   S = S->next;
-  // }
 
-  return (pred);
+
+  return (label);
 }
 
 
