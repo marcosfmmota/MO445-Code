@@ -152,106 +152,106 @@ iftImage *iftObjectMap(iftMImage *mimg, iftLabeledSet *training_set, int Imax)
    value of q and Omax is the maximum value in the object map O. */
 
 
-   iftLabeledSet *iftConnectInternalSeeds(iftLabeledSet *seeds, iftImage *objmap)
+iftLabeledSet *iftConnectInternalSeeds(iftLabeledSet *seeds, iftImage *objmap)
+ {
+   iftImage   *pathval = NULL, *pred = NULL;
+   iftGQueue  *Q = NULL;
+   int         i, p, q, tmp, Omax=iftMaximumValue(objmap);
+   iftVoxel    u, v;
+   iftLabeledSet *S = NULL, *newS=NULL;
+   iftAdjRel     *A = NULL;
+
+   if (iftNumberOfLabels(seeds)!=2)
+   iftError("It is only implemented for binary segmentation","iftConnectInternalSeeds");
+
+   if (iftIs3DImage(objmap))
+   A = iftSpheric(1.0);
+   else
+   A = iftCircular(1.0);
+
+   // Initialization
+   pathval  = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
+   pred     = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
+   Q        = iftCreateGQueue(Omax+1, objmap->n, pathval->val);
+
+   for (p = 0; p < objmap->n; p++)
    {
-     iftImage   *pathval = NULL, *pred = NULL;
-     iftGQueue  *Q = NULL;
-     int         i, p, q, tmp, Omax=iftMaximumValue(objmap);
-     iftVoxel    u, v;
-     iftLabeledSet *S = NULL, *newS=NULL;
-     iftAdjRel     *A = NULL;
-
-     if (iftNumberOfLabels(seeds)!=2)
-     iftError("It is only implemented for binary segmentation","iftConnectInternalSeeds");
-
-     if (iftIs3DImage(objmap))
-     A = iftSpheric(1.0);
-     else
-     A = iftCircular(1.0);
-
-     // Initialization
-     pathval  = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
-     pred     = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
-     Q        = iftCreateGQueue(Omax+1, objmap->n, pathval->val);
-
-     for (p = 0; p < objmap->n; p++)
-     {
-       pathval->val[p] = IFT_INFINITY_INT;
-     }
-
-     S = seeds;
-     while (S != NULL)
-     {
-       p              = S->elem;
-       iftInsertLabeledSet(&newS,p,S->label);
-       S              = S->next;
-     }
-
-     S = seeds;
-     while (S != NULL)
-     {
-       p = S->elem;
-       if (S->label > 0){
-         pred->val[p]    = IFT_NIL;
-         pathval->val[p] = 0;
-         iftInsertGQueue(&Q,p);
-         break;
-       }
-       S = S->next;
-     }
-
-     /* Image Foresting Transform */
-
-     while (!iftEmptyGQueue(Q))
-     {
-       p = iftRemoveGQueue(Q);
-       u = iftGetVoxelCoord(objmap, p);
-
-       for (i = 1; i < A->n; i++)
-       {
-         v = iftGetAdjacentVoxel(A, u, i);
-
-         if (iftValidVoxel(objmap, v))
-         {
-           q = iftGetVoxelIndex(objmap, v);
-           if (Q->L.elem[q].color != IFT_BLACK)
-           {
-             tmp = Omax - objmap->val[q];
-             if (tmp < pathval->val[q]){
-               if (Q->L.elem[q].color == IFT_GRAY)
-               iftRemoveGQueueElem(Q,q);
-               pred->val[q]     = p;
-               pathval->val[q]  = tmp;
-               iftInsertGQueue(&Q, q);
-             }
-           }
-         }
-       }
-     }
-
-     iftDestroyAdjRel(&A);
-     iftDestroyGQueue(&Q);
-     iftDestroyImage(&pathval);
-
-     S = seeds;
-     while (S != NULL){
-       p = S->elem;
-       if (S->label > 0){
-         q = p;
-         while (pred->val[q] != IFT_NIL){
-           if(iftLabeledSetHasElement(newS, q)==0) {
-             iftInsertLabeledSet(&newS,q,1);
-           }
-           q = pred->val[q];
-         }
-       }
-       S = S->next;
-     }
-
-     iftDestroyImage(&pred);
-
-     return (newS);
+     pathval->val[p] = IFT_INFINITY_INT;
    }
+
+   S = seeds;
+   while (S != NULL)
+   {
+     p              = S->elem;
+     iftInsertLabeledSet(&newS,p,S->label);
+     S              = S->next;
+   }
+
+   S = seeds;
+   while (S != NULL)
+   {
+     p = S->elem;
+     if (S->label > 0){
+       pred->val[p]    = IFT_NIL;
+       pathval->val[p] = 0;
+       iftInsertGQueue(&Q,p);
+       break;
+     }
+     S = S->next;
+   }
+
+   /* Image Foresting Transform */
+
+   while (!iftEmptyGQueue(Q))
+   {
+     p = iftRemoveGQueue(Q);
+     u = iftGetVoxelCoord(objmap, p);
+
+     for (i = 1; i < A->n; i++)
+     {
+       v = iftGetAdjacentVoxel(A, u, i);
+
+       if (iftValidVoxel(objmap, v))
+       {
+         q = iftGetVoxelIndex(objmap, v);
+         if (Q->L.elem[q].color != IFT_BLACK)
+         {
+           tmp = Omax - objmap->val[q];
+           if (tmp < pathval->val[q]){
+             if (Q->L.elem[q].color == IFT_GRAY)
+             iftRemoveGQueueElem(Q,q);
+             pred->val[q]     = p;
+             pathval->val[q]  = tmp;
+             iftInsertGQueue(&Q, q);
+           }
+         }
+       }
+     }
+   }
+
+   iftDestroyAdjRel(&A);
+   iftDestroyGQueue(&Q);
+   iftDestroyImage(&pathval);
+
+   S = seeds;
+   while (S != NULL){
+     p = S->elem;
+     if (S->label > 0){
+       q = p;
+       while (pred->val[q] != IFT_NIL){
+         if(iftLabeledSetHasElement(newS, q)==0) {
+           iftInsertLabeledSet(&newS,q,1);
+         }
+         q = pred->val[q];
+       }
+     }
+     S = S->next;
+   }
+
+   iftDestroyImage(&pred);
+
+   return (newS);
+ }
 
 iftImage *iftDelineateObjectByWatershed(iftFImage *weight, iftLabeledSet *seeds) {
 
@@ -272,10 +272,104 @@ iftImage *iftDelineateObjectByOrientedWatershed(iftFImage *weight, iftImage *obj
 
 iftImage *iftDelineateObjectRegion(iftMImage *mimg, iftImage *objmap, iftLabeledSet *seeds, float alpha) {
 
-  iftImage   *label = NULL;
+  iftImage   *label = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
+  iftImage   *pathval = NULL, *pred = NULL;
+  iftGQueue  *Q = NULL;
+  int         i, p, q, tmp, Omax=iftMaximumValue(objmap);
+  iftVoxel    u, v;
+  iftAdjRel     *A = NULL;
+  iftLabeledSet *S = NULL;
+  float K = 1.2;
 
+  // Initialization
+  pathval  = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
+  pred     = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
+  Q        = iftCreateGQueue(Omax+1, objmap->n, pathval->val);
+  A = iftCircular(1.0);
 
-  return (label);
+  for (p = 0; p < objmap->n; p++)
+  {
+    pathval->val[p] = IFT_INFINITY_INT;
+  }
+
+  S = seeds;
+  while (S != NULL)
+  {
+    p = S->elem;
+    if (S->label > 0){
+      pred->val[p]    = IFT_NIL;
+      pathval->val[p] = 0;
+      iftInsertGQueue(&Q,p);
+      // printf("%d\n", p);
+      // break;
+    }
+    S = S->next;
+  }
+
+  /* Image Foresting Transform */
+  int c = 0;
+  while (!iftEmptyGQueue(Q))
+  {
+    p = iftRemoveGQueue(Q);
+    u = iftGetVoxelCoord(objmap, p);
+
+    for (i = 1; i < A->n; i++)
+    {
+      v = iftGetAdjacentVoxel(A, u, i);
+
+      if (iftValidVoxel(objmap, v))
+      {
+        // pidx = iftGetVoxelIndex(objmap,u)
+        q = iftGetVoxelIndex(objmap, v);
+        if (Q->L.elem[q].color != IFT_BLACK)
+        {
+          int Do = objmap->val[p] - objmap->val[q];
+          int Dip = 0;
+          int Diq = 0 ;
+          for (int j = 0; j < mimg->m; j++)
+          {
+            Dip += mimg->band[j].val[p] * mimg->band[j].val[p];
+            Diq += mimg->band[j].val[q] * mimg->band[j].val[q];
+          }
+          float Di = sqrtf(Dip - Diq);
+          float dpq = K*(alpha*Do + (1 + alpha)*Di);
+          float temp;
+          //Computes the max function
+          temp = (dpq > pathval->val[p]) ? dpq : pathval->val[q];
+          printf("%f\n", temp);
+          if (temp < pathval->val[q]){
+            // if (Q->L.elem[q].color == IFT_GRAY)
+            // iftRemoveGQueueElem(Q,q);
+            c++;
+            pred->val[q]     = p;
+            pathval->val[q]  = tmp;
+            iftInsertGQueue(&Q, q);
+          }
+        }
+      }
+    }
+  }
+
+  iftDestroyAdjRel(&A);
+  iftDestroyGQueue(&Q);
+  // iftDestroyImage(&pathval);
+
+  S = seeds;
+  while (S != NULL){
+    p = S->elem;
+    if (S->label > 0){
+      q = p;
+      while (pred->val[q] != IFT_NIL){
+        if(iftLabeledSetHasElement(S, q)==0) {
+          iftInsertLabeledSet(&S,q,1);
+        }
+        q = pred->val[q];
+      }
+    }
+    S = S->next;
+  }
+
+  return (pred);
 }
 
 
@@ -353,8 +447,8 @@ int main(int argc, char *argv[])
   /* Draw segmentation border */
 
   iftDrawBorders(img, label, A, YCbCr, B);
-  //iftMyDrawBinaryLabeledSeeds(img,seeds,YCbCr,A);
-  
+  // iftMyDrawBinaryLabeledSeeds(img,seeds,YCbCr,A);
+
   iftWriteImageByExt(img,argv[4]);
 
   iftDestroyAdjRel(&A);
