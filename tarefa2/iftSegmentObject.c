@@ -511,7 +511,91 @@ iftImage *iftDelineateObjectRegion(iftMImage *mimg, iftImage *objmap, iftLabeled
   return (label);
 }
 
-
+// iftImage *iftDelineateDynamic(iftMImage *mimg, iftImage *objmap, iftLabeledSet *seeds, float alpha) {
+//
+//   iftImage   *label = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
+//   iftImage   *pathval = NULL, *pred = NULL;
+//   iftGQueue  *Q = NULL;
+//   int         i, p, q;
+//   iftVoxel    u, v;
+//   iftAdjRel     *A = NULL;
+//   iftLabeledSet *S = NULL;
+//   float K = 1.2;
+//   float Featp[mimg->m], Featq[mimg->m], tmp;
+//
+//
+//   // Initialization
+//   pathval  = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
+//   pred     = iftCreateImage(objmap->xsize, objmap->ysize, objmap->zsize);
+//   Q        = iftDynamicSet(mimg->m);
+//   A = iftCircular(1.0);
+//
+//   for (p = 0; p < objmap->n; p++)
+//   {
+//     pathval->val[p] = IFT_INFINITY_INT;
+//   }
+//
+//
+//   S = seeds;
+//   while (S != NULL)
+//   {
+//     p = S->elem;
+//     pred->val[p]    = IFT_NIL;
+//     pathval->val[p] = 0;
+//     label->val[p] = S->label;
+//     //iftInsertGQueue(&Q,p);
+//     // break;
+//     S = S->next;
+//   }
+//
+//   /* Image Foresting Transform */
+//
+//   while (!iftEmptyGQueue(Q))
+//   {
+//     //p = iftRemoveGQueue(Q);
+//     u = iftGetVoxelCoord(objmap, p);
+//
+//     for (i = 1; i < A->n; i++)
+//     {
+//       v = iftGetAdjacentVoxel(A, u, i);
+//       if (iftValidVoxel(objmap, v))
+//       {
+//         // pidx = iftGetVoxelIndex(objmap,u)
+//         q = iftGetVoxelIndex(objmap, v);
+//         if (Q->L.elem[q].color != IFT_BLACK)
+//         {
+//           int Do = objmap->val[p] - objmap->val[q];
+//           if ( Do < 0) Do *= -1;
+//           for (int f=0; f < mimg->m; f++) {
+//             Featp[f] = mimg->band[f].val[p];
+//             Featq[f] = mimg->band[f].val[q];
+//           }
+//           float Di = iftFeatDistance(Featp,Featq,mimg->m);
+//           float dpq = K*(alpha*Do + (1 - alpha)*Di);
+//           //  printf("<%f, %f>\n", alpha*Do, (1 - alpha)*Di);
+//           //Computes the max function
+//           tmp = (dpq > pathval->val[p]) ? dpq : pathval->val[p];
+//           if (tmp < pathval->val[q]){
+//             if (Q->L.elem[q].color == IFT_GRAY)
+//             iftRemoveGQueueElem(Q,q);
+//             pred->val[q]     = p;
+//             pathval->val[q]  = tmp;
+//             label->val[q] = label->val[p];
+//             iftInsertGQueue(&Q, q);
+//           }
+//         }
+//       }
+//     }
+//   }
+//
+//   iftDestroyAdjRel(&A);
+//   iftDestroyDynamicSet(&Q);
+//   iftDestroyImage(&pathval);
+//   iftDestroyImage(&pred);
+// 
+//
+//   return (label);
+// }
 
 int main(int argc, char *argv[])
 {
