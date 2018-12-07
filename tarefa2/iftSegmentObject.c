@@ -581,7 +581,7 @@ iftImage *iftDelineateObjectRegion(iftMImage *mimg, iftImage *objmap, iftLabeled
 //             pred->val[q]     = p;
 //             pathval->val[q]  = tmp;
 //             label->val[q] = label->val[p];
-//             iftInsertGQueue(&Q, q);
+//             //iftInsertGQueue(&Q, q);
 //           }
 //         }
 //       }
@@ -592,7 +592,7 @@ iftImage *iftDelineateObjectRegion(iftMImage *mimg, iftImage *objmap, iftLabeled
 //   iftDestroyDynamicSet(&Q);
 //   iftDestroyImage(&pathval);
 //   iftDestroyImage(&pred);
-// 
+//
 //
 //   return (label);
 // }
